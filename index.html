@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="אימונים">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>יומן אימונים</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#ffffff; --text:#15181e; --muted:#6b7280; --line:#e3e6eb;
+  --accent:#1f4e9c; --accent-text:#ffffff; --done:#16a34a; --danger:#c62828;
+  --input:#f7f8fa; --shadow:0 1px 2px rgba(0,0,0,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115; --card:#181b22; --text:#eef0f4; --muted:#9aa3b2; --line:#2a2f3a;
+    --accent:#4f8cf0; --accent-text:#0b0e14; --done:#2dc46a; --danger:#f06565;
+    --input:#10131a; --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+main{padding:calc(12px + env(safe-area-inset-top)) 16px 16px;max-width:640px;margin:0 auto}
+h1{font-size:26px;margin:6px 0 4px;letter-spacing:-.01em}
+h2{font-size:17px;margin:22px 0 8px;color:var(--muted);font-weight:600}
+p{margin:6px 0;line-height:1.45}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{border:0;background:none;padding:0;cursor:pointer}
+input,select,textarea{width:100%;background:var(--input);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:44px}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0}
+label>input,label>select,label>textarea{margin-top:4px;color:var(--text)}
+.card{display:block;width:100%;text-align:start;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:10px 0;box-shadow:var(--shadow)}
+.btn{display:inline-block;width:100%;text-align:center;padding:13px 16px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:600;margin:8px 0;min-height:48px;line-height:1.2}
+.btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.btn.danger{color:var(--danger);border-color:var(--line)}
+.btn.small{width:auto;padding:9px 14px;font-size:14px;min-height:40px}
+.btn:active{opacity:.75}
+.icon{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:16px;flex:none}
+.icon:disabled{opacity:.3}
+.icon.danger{color:var(--danger)}
+
+/* home */
+.week{display:flex;gap:6px;margin:14px 0 6px}
+.day{flex:1;text-align:center;font-size:13px;color:var(--muted)}
+.day-dot{height:8px;border-radius:4px;background:var(--line);margin-top:6px}
+.cards{margin-top:10px}
+.wcard{position:relative;padding-inline-start:22px;overflow:hidden}
+.wcard::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:8px;background:var(--c)}
+.wname{font-size:19px;font-weight:700}
+.wmeta{color:var(--muted);font-size:13px;margin-top:4px}
+.badge{display:inline-block;margin-top:8px;font-size:13px;font-weight:600;color:var(--done);background:color-mix(in srgb,var(--done) 14%,transparent);padding:3px 10px;border-radius:999px}
+details.notes{margin-top:18px;color:var(--muted);font-size:14px}
+details.notes summary{cursor:pointer;font-weight:600}
+details.notes li{margin:8px 0;line-height:1.45}
+
+/* log */
+.log-head{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;padding-inline-start:22px}
+.log-head::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:8px;background:var(--c)}
+.log-title{font-size:22px;font-weight:700}
+.date{margin:10px 0 2px}
+.date input{width:auto;min-width:170px}
+.progress{height:6px;background:var(--line);border-radius:3px;margin:12px 0 6px;overflow:hidden}
+.progress .bar{height:100%;background:var(--done);transition:width .2s}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.back{font-size:15px;color:var(--accent);font-weight:600;padding:8px 0}
+.ex{padding:12px 14px}
+.ex-head{display:flex;gap:10px;align-items:flex-start}
+.ex-n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--line);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-top:2px}
+.ex-t{flex:1;min-width:0}
+.ex-name{font-size:17px;font-weight:700;line-height:1.3}
+.ex-meta{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.4}
+.ex-notes{margin-top:4px;font-size:13px;color:var(--muted)}
+.ex-notes summary{cursor:pointer}
+.ex-notes p{margin:4px 0 0;line-height:1.45}
+.ex-w{display:flex;align-items:flex-end;gap:12px;margin-top:10px;flex-wrap:wrap}
+.ex-w label{margin:0;flex:none;width:150px;position:relative}
+.ex-w input{padding-inline-end:44px;font-size:18px;font-weight:600}
+.unit{position:absolute;inset-inline-end:12px;bottom:12px;font-size:13px;color:var(--muted)}
+.prev{font-size:13px;color:var(--accent);padding:8px 0;text-align:start}
+.prev.muted{color:var(--muted)}
+.sets{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.set{width:50px;height:50px;border-radius:12px;border:2px solid var(--line);background:var(--input);font-size:18px;font-weight:700;color:var(--muted)}
+.set.on{background:var(--done);border-color:var(--done);color:#fff}
+.set:active{transform:scale(.95)}
+
+/* history */
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-inline-start:22px;position:relative;overflow:hidden}
+.row::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:8px;background:var(--c)}
+.row-t{font-weight:700;font-size:16px}
+.row-r{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+
+/* plan editor */
+.sched-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.sched{display:flex;align-items:center;gap:8px;margin:4px 0}
+.sched span{width:22px;flex:none;color:var(--text);font-weight:600}
+.sched select{margin:0}
+.w-edit{padding:12px;position:relative;overflow:hidden;padding-inline-start:20px}
+.w-edit::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:8px;background:var(--c)}
+.w-edit-head{display:flex;gap:8px;align-items:center}
+.w-edit-head select{width:110px;flex:none}
+.grow{flex:1;min-width:0}
+.big{font-size:18px;font-weight:700}
+.w-edit-tools{display:flex;gap:8px;align-items:center;margin:10px 0 4px}
+.w-edit-tools .btn{margin:0;margin-inline-start:auto}
+.ex-edit{border-top:1px solid var(--line);padding:12px 0 6px;margin-top:8px}
+.ex-edit-head{display:flex;gap:6px;align-items:center}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.grid4 label{margin:6px 0}
+.grid4 input{padding:8px 10px}
+
+/* tabs */
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:10}
+nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:4px 0;font-weight:600}
+nav.tabs button.on{color:var(--accent)}
+nav.tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* empty */
+.empty{text-align:center;padding:40px 10px}
+.empty h1{margin-bottom:10px}
+.empty .btn{max-width:320px;margin-inline:auto;display:block}
+
+/* toast */
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));background:var(--text);color:var(--bg);padding:12px 16px;border-radius:12px;text-align:center;font-weight:600;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav class="tabs" id="tabs"></nav>
+<div id="toast" role="status"></div>
+<script>
+(function(){
+'use strict';
+var K={plan:'b3.plan',sessions:'b3.sessions',meta:'b3.meta'};
+var COLORS=[['#1f4e9c','כחול'],['#d62839','אדום'],['#8b3fd9','סגול'],['#8a1c3f','בורדו'],['#0f766e','ירוק'],['#b45309','כתום'],['#334155','אפור']];
+var DAYS=['א','ב','ג','ד','ה','ו','ש'];
+var app=document.getElementById('app');
+var tabs=document.getElementById('tabs');
+var toastEl=document.getElementById('toast');
+var toastT=null;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function load(k,f){try{var v=localStorage.getItem(k);return v==null?f:JSON.parse(v);}catch(e){return f;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){toast('השמירה בטלפון נכשלה');return false;}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad(n){return String(n).padStart(2,'0');}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function parseISO(iso){var p=String(iso||'').split('-').map(Number);return new Date(p[0],(p[1]||1)-1,p[2]||1);}
+function fmtDate(iso){if(!iso)return'';try{return new Intl.DateTimeFormat('he-IL',{weekday:'long',day:'numeric',month:'numeric',year:'numeric'}).format(parseISO(iso));}catch(e){return fmtShort(iso);}}
+function fmtShort(iso){if(!iso)return'';var p=iso.split('-');return Number(p[2])+'.'+Number(p[1])+'.'+p[0];}
+function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove('show');},2200);}
+function parseWeight(v){if(v==null)return null;var s=String(v).trim().replace(',','.');if(s==='')return null;var n=parseFloat(s);return isNaN(n)?null:n;}
+
+/* ---------- model ---------- */
+function normalizePlan(p){
+  if(!p||typeof p!=='object'||!Array.isArray(p.workouts))return null;
+  var out={title:String(p.title||'תוכנית אימונים'),goal:String(p.goal||''),
+    notes:Array.isArray(p.notes)?p.notes.map(String).filter(Boolean):[],
+    schedule:(Array.isArray(p.schedule)&&p.schedule.length===7)?p.schedule.slice():[null,null,null,null,null,null,null],
+    workouts:[]};
+  p.workouts.forEach(function(w){
+    if(!w||typeof w!=='object')return;
+    var wo={id:String(w.id||uid()),name:String(w.name||'אימון'),color:String(w.color||COLORS[out.workouts.length%COLORS.length][0]),exercises:[]};
+    (Array.isArray(w.exercises)?w.exercises:[]).forEach(function(e){
+      if(!e||typeof e!=='object')return;
+      var sets=parseInt(e.sets,10);if(!(sets>=1))sets=3;if(sets>12)sets=12;
+      wo.exercises.push({id:String(e.id||uid()),name:String(e.name||'תרגיל'),sets:sets,reps:String(e.reps||''),rest:String(e.rest||''),weight:String(e.weight||''),notes:String(e.notes||'')});
+    });
+    out.workouts.push(wo);
+  });
+  out.schedule=out.schedule.map(function(id){return out.workouts.some(function(w){return w.id===id;})?id:null;});
+  return out;
+}
+function normalizeSessions(arr){
+  if(!Array.isArray(arr))return [];
+  return arr.filter(function(s){return s&&s.id&&s.workoutId&&/^\d{4}-\d{2}-\d{2}$/.test(String(s.date));})
+    .map(function(s){return {id:String(s.id),workoutId:String(s.workoutId),date:String(s.date),entries:(s.entries&&typeof s.entries==='object')?s.entries:{},createdAt:Number(s.createdAt)||0,updatedAt:Number(s.updatedAt)||0};});
+}
+
+var plan=normalizePlan(load(K.plan,null));
+var sessions=normalizeSessions(load(K.sessions,[]));
+var meta=load(K.meta,{})||{};
+var view={name:'home'};
+
+function persistPlan(){save(K.plan,plan);}
+function persistSessions(){save(K.sessions,sessions);}
+function persistMeta(){save(K.meta,meta);}
+function getWorkout(id){if(!plan)return null;for(var i=0;i<plan.workouts.length;i++)if(plan.workouts[i].id===id)return plan.workouts[i];return null;}
+function getExercise(w,id){for(var i=0;i<w.exercises.length;i++)if(w.exercises[i].id===id)return w.exercises[i];return null;}
+function getSession(id){for(var i=0;i<sessions.length;i++)if(sessions[i].id===id)return sessions[i];return null;}
+function sessionFor(wid,date){for(var i=0;i<sessions.length;i++)if(sessions[i].workoutId===wid&&sessions[i].date===date)return sessions[i];return null;}
+function createSession(wid,date){var s={id:uid(),workoutId:wid,date:date,entries:{},createdAt:Date.now(),updatedAt:Date.now()};sessions.push(s);persistSessions();return s;}
+function touch(s){s.updatedAt=Date.now();persistSessions();}
+function entryFor(s,ex){
+  var e=s.entries[ex.id];
+  if(!e||typeof e!=='object'){e={name:ex.name,weight:null,done:[]};s.entries[ex.id]=e;}
+  if(!Array.isArray(e.done))e.done=[];
+  while(e.done.length<ex.sets)e.done.push(false);
+  e.name=ex.name;
+  return e;
+}
+function setsDone(s){
+  var w=getWorkout(s.workoutId),done=0,total=0;
+  if(!w)return {done:0,total:0};
+  w.exercises.forEach(function(ex){total+=ex.sets;var e=s.entries[ex.id];if(e&&Array.isArray(e.done))done+=e.done.slice(0,ex.sets).filter(Boolean).length;});
+  return {done:done,total:total};
+}
+function prevWeight(s,ex){
+  var name=ex.name.trim(),best=null;
+  sessions.forEach(function(o){
+    if(o.id===s.id||o.date>=s.date)return;
+    Object.keys(o.entries).forEach(function(id){
+      var e=o.entries[id];if(!e||e.weight==null||e.weight==='')return;
+      var en=e.name;
+      if(!en){var w=getWorkout(o.workoutId);var x=w?getExercise(w,id):null;en=x?x.name:'';}
+      if(String(en).trim()===name&&(!best||o.date>best.date))best={date:o.date,weight:e.weight};
+    });
+  });
+  return best;
+}
+function lastSessionOf(wid){var best=null;sessions.forEach(function(s){if(s.workoutId===wid&&(!best||s.date>best.date))best=s;});return best;}
+
+/* ---------- views ---------- */
+function emptyHTML(){
+  return '<div class="empty"><h1>יומן אימונים</h1><p class="muted">אין עדיין תוכנית בטלפון הזה.</p>'+
+    '<label class="btn primary">טעינת תוכנית מקובץ<input type="file" accept=".json,application/json" data-act="import-file" hidden></label>'+
+    '<button class="btn" data-act="new-plan">יצירת תוכנית ידנית</button>'+
+    '<p class="muted small">הכול נשמר בדפדפן בטלפון הזה בלבד.</p></div>';
+}
+function homeHTML(){
+  if(!plan)return emptyHTML();
+  var today=todayISO();
+  var sched=plan.schedule.map(function(id,i){var w=getWorkout(id);return '<div class="day">'+DAYS[i]+"'"+'<div class="day-dot" style="'+(w?'background:'+esc(w.color):'')+'"></div></div>';}).join('');
+  var cards=plan.workouts.map(function(w){
+    var last=lastSessionOf(w.id),t=sessionFor(w.id,today),sd=t?setsDone(t):null;
+    return '<button class="card wcard" data-act="open-today" data-w="'+esc(w.id)+'" style="--c:'+esc(w.color)+'">'+
+      '<div class="wname">'+esc(w.name)+'</div>'+
+      '<div class="wmeta">'+w.exercises.length+' תרגילים'+(last?' · בפעם האחרונה '+fmtShort(last.date):'')+'</div>'+
+      (t?'<div class="badge">היום · '+sd.done+' מתוך '+sd.total+' סטים</div>':'')+
+      '</button>';
+  }).join('');
+  var notes=plan.notes.length?'<details class="notes"><summary>הנחיות הבלוק</summary><ul>'+plan.notes.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul></details>':'';
+  return '<h1>'+esc(plan.title)+'</h1>'+(plan.goal?'<p class="muted">'+esc(plan.goal)+'</p>':'')+
+    '<div class="week">'+sched+'</div><div class="cards">'+cards+'</div>'+notes;
+}
+function logHTML(){
+  var s=getSession(view.sessionId);
+  if(!s){view={name:'home'};return homeHTML();}
+  var w=getWorkout(s.workoutId);
+  if(!w)return '<div class="topbar"><button class="back" data-act="go" data-v="history">→ היסטוריה</button></div><p class="muted">האימון הזה כבר לא קיים בתוכנית.</p><button class="btn danger" data-act="del-session">מחיקת הרישום</button>';
+  var sd=setsDone(s);
+  var ex=w.exercises.map(function(e,i){
+    var en=entryFor(s,e),pv=prevWeight(s,e);
+    var m=String(e.weight).match(/^\s*(\d+(?:[.,]\d+)?)/);var ph=m?m[1]:'';
+    var boxes='';for(var k=0;k<e.sets;k++){boxes+='<button class="set'+(en.done[k]?' on':'')+'" data-act="toggle-set" data-e="'+esc(e.id)+'" data-k="'+k+'" aria-pressed="'+(en.done[k]?'true':'false')+'">'+(en.done[k]?'✓':(k+1))+'</button>';}
+    var meta=[];if(e.reps)meta.push('חזרות: '+esc(e.reps));if(e.rest)meta.push('מנוחה: '+esc(e.rest));if(e.weight)meta.push('מתוכנן: '+esc(e.weight));
+    return '<section class="card ex"><div class="ex-head"><div class="ex-n">'+(i+1)+'</div><div class="ex-t">'+
+      '<div class="ex-name">'+esc(e.name)+'</div>'+(meta.length?'<div class="ex-meta">'+meta.join(' · ')+'</div>':'')+
+      (e.notes?'<details class="ex-notes"><summary>הערות</summary><p>'+esc(e.notes)+'</p></details>':'')+
+      '</div></div>'+
+      '<div class="ex-w"><label>משקל<input type="text" inputmode="decimal" placeholder="'+esc(ph)+'" value="'+(en.weight==null?'':esc(en.weight))+'" data-act="weight" data-e="'+esc(e.id)+'"><span class="unit">ק"ג</span></label>'+
+      (pv?'<button class="prev" data-act="use-prev" data-e="'+esc(e.id)+'" data-v="'+esc(pv.weight)+'">פעם קודמת: '+esc(pv.weight)+' ק"ג ('+fmtShort(pv.date)+')</button>':'<span class="prev muted">אין רישום קודם</span>')+
+      '</div><div class="sets">'+boxes+'</div></section>';
+  }).join('');
+  return '<div class="topbar"><button class="back" data-act="go" data-v="home">→ חזרה</button></div>'+
+    '<div class="log-head" style="--c:'+esc(w.color)+'"><div class="log-title">'+esc(w.name)+'</div>'+
+    '<label class="date">תאריך<input type="date" value="'+esc(s.date)+'" data-act="date"></label><div class="muted small">'+esc(fmtDate(s.date))+'</div>'+
+    '<div class="progress"><div class="bar" id="bar" style="width:'+(sd.total?Math.round(sd.done/sd.total*100):0)+'%"></div></div><div class="muted small" id="sd">'+sd.done+' מתוך '+sd.total+' סטים</div></div>'+
+    ex+'<button class="btn danger" data-act="del-session">מחיקת הרישום של האימון הזה</button>';
+}
+function historyHTML(){
+  if(!sessions.length)return '<h1>היסטוריה</h1><p class="muted">עוד אין אימונים רשומים.</p>';
+  var list=sessions.slice().sort(function(a,b){if(a.date===b.date)return b.updatedAt-a.updatedAt;return a.date<b.date?1:-1;}).map(function(s){
+    var w=getWorkout(s.workoutId),sd=setsDone(s);
+    return '<button class="card row" data-act="open-session" data-s="'+esc(s.id)+'" style="--c:'+esc(w?w.color:'#888')+'"><div><div class="row-t">'+(w?esc(w.name):'אימון שנמחק מהתוכנית')+'</div><div class="muted small">'+esc(fmtDate(s.date))+'</div></div><div class="row-r">'+sd.done+'/'+sd.total+'</div></button>';
+  }).join('');
+  return '<h1>היסטוריה</h1>'+list;
+}
+function planHTML(){
+  if(!plan)return emptyHTML();
+  function colorOpts(c){return COLORS.map(function(p){return '<option value="'+p[0]+'"'+(p[0]===c?' selected':'')+'>'+p[1]+'</option>';}).join('');}
+  var sched=plan.schedule.map(function(id,i){
+    return '<label class="sched"><span>'+DAYS[i]+"'"+'</span><select data-act="sched" data-i="'+i+'"><option value="">מנוחה</option>'+plan.workouts.map(function(w){return '<option value="'+esc(w.id)+'"'+(w.id===id?' selected':'')+'>'+esc(w.name)+'</option>';}).join('')+'</select></label>';
+  }).join('');
+  var ws=plan.workouts.map(function(w,wi){
+    var exs=w.exercises.map(function(e,ei){
+      var a=' data-w="'+esc(w.id)+'" data-e="'+esc(e.id)+'"';
+      return '<div class="ex-edit"><div class="ex-edit-head"><span class="ex-n">'+(ei+1)+'</span>'+
+        '<input class="grow" placeholder="שם התרגיל" value="'+esc(e.name)+'" data-act="ef"'+a+' data-f="name">'+
+        '<button class="icon" data-act="ex-up"'+a+(ei===0?' disabled':'')+'>↑</button><button class="icon" data-act="ex-down"'+a+(ei===w.exercises.length-1?' disabled':'')+'>↓</button><button class="icon danger" data-act="ex-del"'+a+'>✕</button></div>'+
+        '<div class="grid4"><label>סטים<input type="number" inputmode="numeric" min="1" max="12" value="'+e.sets+'" data-act="ef"'+a+' data-f="sets"></label>'+
+        '<label>חזרות<input value="'+esc(e.reps)+'" data-act="ef"'+a+' data-f="reps"></label>'+
+        '<label>מנוחה<input value="'+esc(e.rest)+'" data-act="ef"'+a+' data-f="rest"></label>'+
+        '<label>משקל מתוכנן<input value="'+esc(e.weight)+'" data-act="ef"'+a+' data-f="weight"></label></div>'+
+        '<label>הערות<textarea rows="2" data-act="ef"'+a+' data-f="notes">'+esc(e.notes)+'</textarea></label></div>';
+    }).join('');
+    return '<section class="card w-edit" data-wid="'+esc(w.id)+'" style="--c:'+esc(w.color)+'"><div class="w-edit-head"><input class="grow big" placeholder="שם האימון" value="'+esc(w.name)+'" data-act="wf" data-w="'+esc(w.id)+'" data-f="name"><select data-act="wf" data-w="'+esc(w.id)+'" data-f="color">'+colorOpts(w.color)+'</select></div>'+
+      '<div class="w-edit-tools"><button class="icon" data-act="w-up" data-w="'+esc(w.id)+'"'+(wi===0?' disabled':'')+'>↑</button><button class="icon" data-act="w-down" data-w="'+esc(w.id)+'"'+(wi===plan.workouts.length-1?' disabled':'')+'>↓</button><button class="btn small danger" data-act="w-del" data-w="'+esc(w.id)+'">מחיקת האימון</button></div>'+
+      exs+'<button class="btn small" data-act="ex-add" data-w="'+esc(w.id)+'">+ תרגיל</button></section>';
+  }).join('');
+  return '<h1>עריכת התוכנית</h1><label>שם התוכנית<input value="'+esc(plan.title)+'" data-act="pf" data-f="title"></label><label>מטרה<input value="'+esc(plan.goal)+'" data-act="pf" data-f="goal"></label>'+
+    '<h2>לוח שבועי</h2><div class="sched-grid">'+sched+'</div><h2>אימונים</h2>'+ws+'<button class="btn" data-act="w-add">+ אימון</button>'+
+    '<h2>הנחיות כלליות</h2><label>שורה לכל הנחיה<textarea rows="5" data-act="pf" data-f="notes">'+esc(plan.notes.join('\n'))+'</textarea></label>'+
+    '<p class="muted small">כל שינוי נשמר מיד. מחיקת תרגיל או אימון לא מוחקת רישומים ישנים.</p>';
+}
+function backupHTML(){
+  var last=meta.lastExport?fmtDate(String(meta.lastExport).slice(0,10)):'אף פעם';
+  return '<h1>גיבוי</h1>'+
+    '<section class="card"><p><b>'+sessions.length+'</b> אימונים רשומים בטלפון הזה.</p><p class="muted small">ייצוא אחרון: '+esc(last)+'</p>'+
+    '<button class="btn primary" data-act="export">ייצוא לקובץ</button>'+
+    '<p class="muted small">הקובץ מכיל את התוכנית ואת כל האימונים. שמירה ב"On My iPhone" משאירה אותו במכשיר.</p></section>'+
+    '<section class="card"><h2 style="margin-top:0">שחזור או טעינת תוכנית</h2><label class="btn" style="color:var(--text)">בחירת קובץ<input type="file" accept=".json,application/json" data-act="import-file" hidden></label>'+
+    '<p class="muted small">קובץ גיבוי מלא מחליף את התוכנית וממזג את האימונים. קובץ תוכנית בלבד מחליף רק את התוכנית ומשאיר את האימונים.</p></section>'+
+    '<section class="card"><h2 style="margin-top:0">איפה הנתונים</h2><p class="muted small">הכול נשמר באחסון של הדפדפן בטלפון הזה בלבד. אין שרת ואין סנכרון. ניקוי נתוני אתרים בספארי ימחק את היומן, ולכן כדאי לייצא מדי פעם.</p></section>';
+}
+
+var ICONS={
+  home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  history:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  plan:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M19 13l-5 5"/></svg>',
+  backup:'<svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>'
+};
+function renderTabs(){
+  var cur=view.name==='log'?'home':view.name;
+  tabs.innerHTML=[['home','בית'],['history','היסטוריה'],['plan','תוכנית'],['backup','גיבוי']].map(function(t){
+    return '<button data-act="go" data-v="'+t[0]+'" class="'+(cur===t[0]?'on':'')+'">'+ICONS[t[0]]+t[1]+'</button>';
+  }).join('');
+}
+function render(keepScroll){
+  var y=window.scrollY;
+  var html;
+  switch(view.name){
+    case 'log':html=logHTML();break;
+    case 'history':html=historyHTML();break;
+    case 'plan':html=planHTML();break;
+    case 'backup':html=backupHTML();break;
+    default:html=homeHTML();
+  }
+  app.innerHTML=html;
+  renderTabs();
+  window.scrollTo(0,keepScroll?y:0);
+}
+function go(name,extra){view=Object.assign({name:name},extra||{});render(false);}
+
+/* ---------- actions ---------- */
+var saveTimer=null;
+function debouncedPersistPlan(){clearTimeout(saveTimer);saveTimer=setTimeout(persistPlan,250);}
+
+function updateProgress(s){
+  var sd=setsDone(s),bar=document.getElementById('bar'),lab=document.getElementById('sd');
+  if(bar)bar.style.width=(sd.total?Math.round(sd.done/sd.total*100):0)+'%';
+  if(lab)lab.textContent=sd.done+' מתוך '+sd.total+' סטים';
+}
+
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest('[data-act]');
+  if(!t)return;
+  var act=t.getAttribute('data-act');
+  if(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA')return;
+  var s,w,ex,en,i;
+  switch(act){
+    case 'go':go(t.getAttribute('data-v'));break;
+    case 'open-today':
+      s=sessionFor(t.getAttribute('data-w'),todayISO())||createSession(t.getAttribute('data-w'),todayISO());
+      go('log',{sessionId:s.id});break;
+    case 'open-session':go('log',{sessionId:t.getAttribute('data-s')});break;
+    case 'toggle-set':
+      s=getSession(view.sessionId);w=s&&getWorkout(s.workoutId);ex=w&&getExercise(w,t.getAttribute('data-e'));
+      if(!ex)return;en=entryFor(s,ex);i=parseInt(t.getAttribute('data-k'),10);
+      en.done[i]=!en.done[i];touch(s);
+      t.classList.toggle('on',en.done[i]);t.textContent=en.done[i]?'✓':(i+1);t.setAttribute('aria-pressed',en.done[i]?'true':'false');
+      updateProgress(s);break;
+    case 'use-prev':
+      s=getSession(view.sessionId);w=s&&getWorkout(s.workoutId);ex=w&&getExercise(w,t.getAttribute('data-e'));
+      if(!ex)return;en=entryFor(s,ex);en.weight=parseWeight(t.getAttribute('data-v'));touch(s);
+      var inp=app.querySelector('input[data-act="weight"][data-e="'+ex.id+'"]');if(inp)inp.value=en.weight==null?'':en.weight;
+      break;
+    case 'del-session':
+      s=getSession(view.sessionId);if(!s)return;
+      if(!confirm('למחוק את הרישום של האימון הזה? אי אפשר לבטל.'))return;
+      sessions=sessions.filter(function(x){return x.id!==s.id;});persistSessions();go('history');toast('נמחק');break;
+    case 'new-plan':
+      if(plan&&!confirm('כבר יש תוכנית. להחליף אותה בתוכנית ריקה?'))return;
+      plan=normalizePlan({title:'תוכנית אימונים',workouts:[{name:'אימון 1',exercises:[{name:'תרגיל 1',sets:3}]}]});persistPlan();go('plan');break;
+    case 'export':exportAll();break;
+    /* plan editor structure */
+    case 'w-add':plan.workouts.push({id:uid(),name:'אימון '+(plan.workouts.length+1),color:COLORS[plan.workouts.length%COLORS.length][0],exercises:[]});persistPlan();render(true);break;
+    case 'w-del':
+      w=getWorkout(t.getAttribute('data-w'));if(!w)return;
+      if(!confirm('למחוק את האימון "'+w.name+'" מהתוכנית? רישומים ישנים שלו נשארים בהיסטוריה.'))return;
+      plan.workouts=plan.workouts.filter(function(x){return x!==w;});plan.schedule=plan.schedule.map(function(id){return id===w.id?null:id;});persistPlan();render(true);break;
+    case 'w-up':case 'w-down':
+      i=plan.workouts.indexOf(getWorkout(t.getAttribute('data-w')));if(i<0)return;
+      var j=act==='w-up'?i-1:i+1;if(j<0||j>=plan.workouts.length)return;
+      var tmp=plan.workouts[i];plan.workouts[i]=plan.workouts[j];plan.workouts[j]=tmp;persistPlan();render(true);break;
+    case 'ex-add':
+      w=getWorkout(t.getAttribute('data-w'));if(!w)return;
+      w.exercises.push({id:uid(),name:'',sets:3,reps:'',rest:'',weight:'',notes:''});persistPlan();render(true);
+      var last=app.querySelector('section[data-wid="'+w.id+'"] .ex-edit:last-of-type input');if(last)last.focus();break;
+    case 'ex-del':
+      w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
+      if(ex.name&&!confirm('למחוק את התרגיל "'+ex.name+'"?'))return;
+      w.exercises=w.exercises.filter(function(x){return x!==ex;});persistPlan();render(true);break;
+    case 'ex-up':case 'ex-down':
+      w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
+      i=w.exercises.indexOf(ex);var jj=act==='ex-up'?i-1:i+1;if(jj<0||jj>=w.exercises.length)return;
+      var tt=w.exercises[i];w.exercises[i]=w.exercises[jj];w.exercises[jj]=tt;persistPlan();render(true);break;
+  }
+});
+
+document.addEventListener('input',function(ev){
+  var t=ev.target;var act=t.getAttribute&&t.getAttribute('data-act');
+  if(!act)return;
+  var s,w,ex,en,f;
+  switch(act){
+    case 'weight':
+      s=getSession(view.sessionId);w=s&&getWorkout(s.workoutId);ex=w&&getExercise(w,t.getAttribute('data-e'));
+      if(!ex)return;en=entryFor(s,ex);en.weight=parseWeight(t.value);touch(s);break;
+    case 'pf':
+      f=t.getAttribute('data-f');
+      if(f==='notes')plan.notes=t.value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+      else plan[f]=t.value;
+      debouncedPersistPlan();break;
+    case 'wf':
+      w=getWorkout(t.getAttribute('data-w'));if(!w)return;
+      f=t.getAttribute('data-f');w[f]=t.value;debouncedPersistPlan();break;
+    case 'ef':
+      w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
+      f=t.getAttribute('data-f');
+      if(f==='sets'){var n=parseInt(t.value,10);if(n>=1&&n<=12)ex.sets=n;}
+      else ex[f]=t.value;
+      debouncedPersistPlan();break;
+  }
+});
+
+document.addEventListener('change',function(ev){
+  var t=ev.target;var act=t.getAttribute&&t.getAttribute('data-act');
+  if(!act)return;
+  var s,w,i;
+  switch(act){
+    case 'import-file':
+      if(t.files&&t.files[0])importFile(t.files[0]);t.value='';break;
+    case 'date':
+      s=getSession(view.sessionId);if(!s)return;
+      var nd=t.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(nd)){t.value=s.date;return;}
+      if(nd===s.date)return;
+      var other=sessionFor(s.workoutId,nd);
+      if(other){toast('כבר יש רישום של האימון הזה בתאריך '+fmtShort(nd));t.value=s.date;return;}
+      s.date=nd;touch(s);render(true);break;
+    case 'sched':
+      i=parseInt(t.getAttribute('data-i'),10);plan.schedule[i]=t.value||null;persistPlan();break;
+    case 'wf':
+      w=getWorkout(t.getAttribute('data-w'));if(!w)return;
+      if(t.getAttribute('data-f')==='color'){w.color=t.value;persistPlan();render(true);}
+      break;
+    case 'ef':
+      if(t.getAttribute('data-f')==='sets'){clearTimeout(saveTimer);persistPlan();}
+      break;
+  }
+});
+
+function importFile(file){
+  var reader=new FileReader();
+  reader.onerror=function(){toast('קריאת הקובץ נכשלה');};
+  reader.onload=function(){
+    var data;
+    try{data=JSON.parse(String(reader.result));}catch(e){toast('הקובץ אינו קובץ תקין');return;}
+    var newPlan=null,newSessions=null;
+    if(data&&data.plan&&typeof data.plan==='object'){newPlan=normalizePlan(data.plan);newSessions=normalizeSessions(data.sessions);}
+    else if(data&&Array.isArray(data.workouts)){newPlan=normalizePlan(data);}
+    if(!newPlan){toast('הקובץ לא זוהה כתוכנית או כגיבוי');return;}
+    var msg=newSessions?'להחליף את התוכנית הנוכחית ולמזג '+newSessions.length+' אימונים מהקובץ?':(plan?'להחליף את התוכנית הנוכחית בתוכנית שבקובץ? האימונים הרשומים נשארים.':'לטעון את התוכנית שבקובץ?');
+    if(!confirm(msg))return;
+    plan=newPlan;persistPlan();
+    if(newSessions){
+      var byId={};sessions.forEach(function(x){byId[x.id]=x;});
+      newSessions.forEach(function(x){var cur=byId[x.id];if(!cur||(x.updatedAt||0)>(cur.updatedAt||0))byId[x.id]=x;});
+      sessions=Object.keys(byId).map(function(k){return byId[k];});persistSessions();
+    }
+    go('home');toast('נטען');
+  };
+  reader.readAsText(file);
+}
+
+function markExport(){meta.lastExport=new Date().toISOString();persistMeta();if(view.name==='backup')render(true);}
+function exportAll(){
+  var data={app:'block3-log',version:1,exportedAt:new Date().toISOString(),plan:plan,sessions:sessions};
+  var json=JSON.stringify(data,null,1);
+  var name='training-log-'+todayISO()+'.json';
+  var blob=new Blob([json],{type:'application/json'});
+  try{
+    if(typeof File==='function'&&navigator.canShare){
+      var file=new File([blob],name,{type:'application/json'});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:name}).then(markExport,function(err){if(!(err&&err.name==='AbortError'))downloadBlob(blob,name);});
+        return;
+      }
+    }
+  }catch(e){}
+  downloadBlob(blob,name);
+}
+function downloadBlob(blob,name){
+  try{
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},3000);markExport();
+  }catch(e){toast('הייצוא נכשל');}
+}
+
+/* service worker: offline + home-screen */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});
+}
+
+render(false);
+window.__b3={get plan(){return plan;},get sessions(){return sessions;},get view(){return view;},render:render,go:go,importFile:importFile,exportAll:exportAll};
+})();
+</script>
+</body>
+</html>
