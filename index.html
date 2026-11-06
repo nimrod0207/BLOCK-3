@@ -97,6 +97,13 @@ details.notes li{margin:8px 0;line-height:1.45}
 .set{width:50px;height:50px;border-radius:12px;border:2px solid var(--line);background:var(--input);font-size:18px;font-weight:700;color:var(--muted)}
 .set.on{background:var(--done);border-color:var(--done);color:#fff}
 .set:active{transform:scale(.95)}
+.thumb{flex:none;width:84px;height:63px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--input)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;cursor:pointer}
+#zoom img{max-width:100%;max-height:70vh;border-radius:10px}
+.zoom-title{color:#fff;font-weight:700;font-size:18px;text-align:center}
+.img-edit{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.img-edit img{width:84px;height:63px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 
 /* history */
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-inline-start:22px;position:relative;overflow:hidden}
@@ -149,6 +156,7 @@ nav.tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1
 var K={plan:'b3.plan',sessions:'b3.sessions',meta:'b3.meta'};
 var COLORS=[['#1f4e9c','כחול'],['#d62839','אדום'],['#8b3fd9','סגול'],['#8a1c3f','בורדו'],['#0f766e','ירוק'],['#b45309','כתום'],['#334155','אפור']];
 var DAYS=['א','ב','ג','ד','ה','ו','ש'];
+var MAX_IMG=600000; /* chars of data URI per exercise image; keeps a plan well inside the phone's storage quota */
 var app=document.getElementById('app');
 var tabs=document.getElementById('tabs');
 var toastEl=document.getElementById('toast');
@@ -179,7 +187,8 @@ function normalizePlan(p){
     (Array.isArray(w.exercises)?w.exercises:[]).forEach(function(e){
       if(!e||typeof e!=='object')return;
       var sets=parseInt(e.sets,10);if(!(sets>=1))sets=3;if(sets>12)sets=12;
-      wo.exercises.push({id:String(e.id||uid()),name:String(e.name||'תרגיל'),sets:sets,reps:String(e.reps||''),rest:String(e.rest||''),weight:String(e.weight||''),notes:String(e.notes||'')});
+      var img=(typeof e.image==='string'&&/^data:image\/(jpeg|png|webp|gif);base64,/.test(e.image)&&e.image.length<=MAX_IMG)?e.image:'';
+      wo.exercises.push({id:String(e.id||uid()),name:String(e.name||'תרגיל'),sets:sets,reps:String(e.reps||''),rest:String(e.rest||''),weight:String(e.weight||''),notes:String(e.notes||''),image:img});
     });
     out.workouts.push(wo);
   });
@@ -272,7 +281,7 @@ function logHTML(){
     return '<section class="card ex"><div class="ex-head"><div class="ex-n">'+(i+1)+'</div><div class="ex-t">'+
       '<div class="ex-name">'+esc(e.name)+'</div>'+(meta.length?'<div class="ex-meta">'+meta.join(' · ')+'</div>':'')+
       (e.notes?'<details class="ex-notes"><summary>הערות</summary><p>'+esc(e.notes)+'</p></details>':'')+
-      '</div></div>'+
+      '</div>'+(e.image?'<button class="thumb" data-act="zoom" data-e="'+esc(e.id)+'" aria-label="הגדלת התמונה"><img src="'+e.image+'" alt=""></button>':'')+'</div>'+
       '<div class="ex-w"><label>משקל<input type="text" inputmode="decimal" placeholder="'+esc(ph)+'" value="'+(en.weight==null?'':esc(en.weight))+'" data-act="weight" data-e="'+esc(e.id)+'"><span class="unit">ק"ג</span></label>'+
       (pv?'<button class="prev" data-act="use-prev" data-e="'+esc(e.id)+'" data-v="'+esc(pv.weight)+'">פעם קודמת: '+esc(pv.weight)+' ק"ג ('+fmtShort(pv.date)+')</button>':'<span class="prev muted">אין רישום קודם</span>')+
       '</div><div class="sets">'+boxes+'</div></section>';
@@ -307,7 +316,10 @@ function planHTML(){
         '<label>חזרות<input value="'+esc(e.reps)+'" data-act="ef"'+a+' data-f="reps"></label>'+
         '<label>מנוחה<input value="'+esc(e.rest)+'" data-act="ef"'+a+' data-f="rest"></label>'+
         '<label>משקל מתוכנן<input value="'+esc(e.weight)+'" data-act="ef"'+a+' data-f="weight"></label></div>'+
-        '<label>הערות<textarea rows="2" data-act="ef"'+a+' data-f="notes">'+esc(e.notes)+'</textarea></label></div>';
+        '<label>הערות<textarea rows="2" data-act="ef"'+a+' data-f="notes">'+esc(e.notes)+'</textarea></label>'+
+        '<div class="img-edit">'+(e.image?'<img src="'+e.image+'" alt="">':'<span class="muted small">אין תמונה</span>')+
+        '<label class="btn small" style="margin:0;color:var(--text)">'+(e.image?'החלפת תמונה':'הוספת תמונה')+'<input type="file" accept="image/*" data-act="ex-img"'+a+' hidden></label>'+
+        (e.image?'<button class="btn small danger" style="margin:0" data-act="ex-img-del"'+a+'>הסרה</button>':'')+'</div></div>';
     }).join('');
     return '<section class="card w-edit" data-wid="'+esc(w.id)+'" style="--c:'+esc(w.color)+'"><div class="w-edit-head"><input class="grow big" placeholder="שם האימון" value="'+esc(w.name)+'" data-act="wf" data-w="'+esc(w.id)+'" data-f="name"><select data-act="wf" data-w="'+esc(w.id)+'" data-f="color">'+colorOpts(w.color)+'</select></div>'+
       '<div class="w-edit-tools"><button class="icon" data-act="w-up" data-w="'+esc(w.id)+'"'+(wi===0?' disabled':'')+'>↑</button><button class="icon" data-act="w-down" data-w="'+esc(w.id)+'"'+(wi===plan.workouts.length-1?' disabled':'')+'>↓</button><button class="btn small danger" data-act="w-del" data-w="'+esc(w.id)+'">מחיקת האימון</button></div>'+
@@ -410,7 +422,7 @@ document.addEventListener('click',function(ev){
       var tmp=plan.workouts[i];plan.workouts[i]=plan.workouts[j];plan.workouts[j]=tmp;persistPlan();render(true);break;
     case 'ex-add':
       w=getWorkout(t.getAttribute('data-w'));if(!w)return;
-      w.exercises.push({id:uid(),name:'',sets:3,reps:'',rest:'',weight:'',notes:''});persistPlan();render(true);
+      w.exercises.push({id:uid(),name:'',sets:3,reps:'',rest:'',weight:'',notes:'',image:''});persistPlan();render(true);
       var last=app.querySelector('section[data-wid="'+w.id+'"] .ex-edit:last-of-type input');if(last)last.focus();break;
     case 'ex-del':
       w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
@@ -420,8 +432,44 @@ document.addEventListener('click',function(ev){
       w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
       i=w.exercises.indexOf(ex);var jj=act==='ex-up'?i-1:i+1;if(jj<0||jj>=w.exercises.length)return;
       var tt=w.exercises[i];w.exercises[i]=w.exercises[jj];w.exercises[jj]=tt;persistPlan();render(true);break;
+    case 'ex-img-del':
+      w=getWorkout(t.getAttribute('data-w'));ex=w&&getExercise(w,t.getAttribute('data-e'));if(!ex)return;
+      ex.image='';persistPlan();render(true);break;
+    case 'zoom':
+      s=getSession(view.sessionId);w=s&&getWorkout(s.workoutId);ex=w&&getExercise(w,t.getAttribute('data-e'));
+      if(ex&&ex.image)openZoom(ex.image,ex.name);break;
+    case 'unzoom':closeZoom();break;
   }
 });
+
+function openZoom(src,title){
+  closeZoom();
+  var z=document.createElement('div');z.id='zoom';z.setAttribute('data-act','unzoom');
+  z.innerHTML='<div class="zoom-title">'+esc(title)+'</div><img src="'+src+'" alt=""><div class="muted small" style="color:#cbd2dc">הקשה לסגירה</div>';
+  document.body.appendChild(z);
+}
+function closeZoom(){var z=document.getElementById('zoom');if(z)z.remove();}
+
+/* image picked in the plan editor: downscale on the phone, store as a small JPEG data URI */
+function importImage(file,w,ex){
+  if(!file||!/^image\//.test(file.type)){toast('הקובץ אינו תמונה');return;}
+  var url=URL.createObjectURL(file);var img=new Image();
+  img.onload=function(){
+    try{
+      var max=640,sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      var cw=Math.max(1,Math.round(img.naturalWidth*sc)),ch=Math.max(1,Math.round(img.naturalHeight*sc));
+      var c=document.createElement('canvas');c.width=cw;c.height=ch;
+      c.getContext('2d').drawImage(img,0,0,cw,ch);
+      var q=0.8,data=c.toDataURL('image/jpeg',q);
+      while(data.length>MAX_IMG&&q>0.3){q-=0.1;data=c.toDataURL('image/jpeg',q);}
+      if(data.length>MAX_IMG){toast('התמונה גדולה מדי');return;}
+      ex.image=data;persistPlan();render(true);toast('התמונה נשמרה');
+    }catch(e){toast('עיבוד התמונה נכשל');}
+    finally{URL.revokeObjectURL(url);}
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);toast('קריאת התמונה נכשלה');};
+  img.src=url;
+}
 
 document.addEventListener('input',function(ev){
   var t=ev.target;var act=t.getAttribute&&t.getAttribute('data-act');
@@ -455,6 +503,9 @@ document.addEventListener('change',function(ev){
   switch(act){
     case 'import-file':
       if(t.files&&t.files[0])importFile(t.files[0]);t.value='';break;
+    case 'ex-img':
+      w=getWorkout(t.getAttribute('data-w'));var exi=w&&getExercise(w,t.getAttribute('data-e'));
+      if(exi&&t.files&&t.files[0])importImage(t.files[0],w,exi);t.value='';break;
     case 'date':
       s=getSession(view.sessionId);if(!s)return;
       var nd=t.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(nd)){t.value=s.date;return;}

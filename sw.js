@@ -1,5 +1,5 @@
 /* Offline cache for the training log. Network-first for the page, cache-first for assets. */
-var CACHE = 'b3-v1';
+var CACHE = 'b3-v2';
 var ASSETS = ['./', './index.html', './manifest.json', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {
